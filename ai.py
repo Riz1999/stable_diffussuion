@@ -1,81 +1,41 @@
 import tkinter as tk
-from PIL import Image, ImageTk
+import customtkinter as ctk
+
+from PIL import ImageTk
+from authtoken import auth_token
+
 import torch
-from diffusers import StableDiffusionPipeline
+from torch import autocast
+from diffusers import StableDiffusionPipeline 
 
-# Create the Stable Diffusion model pipeline
-pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4", torch_dtype=torch.float16)
-pipe = pipe.to("cuda")
+# Create the app
+app = tk.Tk()
+app.geometry("532x632")
+app.title("Stable Bud") 
+ctk.set_appearance_mode("dark") 
 
-def generate_image():
-    prompt_text = prompt_entry.get()
-    image = pipe(prompt_text).images[0]
+prompt = ctk.CTkEntry(app,height=40, width=512, font=("Arial", 20), text_color="black", fg_color="white") 
+prompt.place(x=10, y=10)
 
-    # Display the generated image in the tkinter window
-    display_image_in_tkinter(image)
+lmain = ctk.CTkLabel(app,height=512, width=512)
+lmain.place(x=10, y=110)
 
-def display_image_in_tkinter(image):
-    window = tk.Toplevel()
-    window.title("Generated Image")
+modelid = "CompVis/stable-diffusion-v1-4"
+device = "cuda"
+pipe = StableDiffusionPipeline.from_pretrained(modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token) 
+pipe.to(device) 
 
-    # Resize the image to fit the tkinter window using the LANCZOS resampling method
-    width, height = image.size
-    aspect_ratio = width / height
-    new_width = 512
-    new_height = int(new_width / aspect_ratio)
-    resized_image = image.resize((new_width, new_height), Image.LANCZOS)
+def generate(): 
+    with autocast(device): 
+        image = prompt.get()
+        image= pipe(image).images[0]
+    
+    image.save('generatedimage.png')
+    img = ImageTk.PhotoImage(image)
+    lmain.configure(image=img) 
 
-    # Convert the PIL image to a PhotoImage to display in a tkinter Label
-    img_tk = ImageTk.PhotoImage(resized_image)
+trigger = ctk.CTkButton(app,height=40, width=120, font=("Arial", 20), text_color="white", fg_color="blue", command=generate) 
+trigger.configure(text="Generate") 
+trigger.place(x=206, y=60) 
 
-    # Create a Label and display the image
-    label = tk.Label(window, image=img_tk)
-    label.image = img_tk  # Store the PhotoImage to prevent garbage collection
-    label.pack()
-
-# Create the GUI window
-root = tk.Tk()
-root.title("Text-to-Image Generator")
-
-# Create a Label and Entry widget to get the prompt input from the user
-prompt_label = tk.Label(root, text="Enter your prompt:")
-prompt_label.pack()
-prompt_entry = tk.Entry(root, width=50)
-prompt_entry.pack()
-
-# Create a button to generate the image
-generate_button = tk.Button(root, text="Generate Image", command=generate_image)
-generate_button.pack()
-
-# Start the tkinter main loop
-root.mainloop()
-
-
-
-
-
-
-
-
-
-
-# import torch
-# from diffusers import StableDiffusionPipeline
-# import tkinter
-
-# pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4", torch_dtype=torch.float16)
-# pipe = pipe.to("cuda")
-# prompt = input("your prompt text:")
-# image = pipe(prompt).images[0]  # image here is in [PIL format](https://pillow.readthedocs.io/en/stable/)
-
-
-
-
-
-
-# # Now to display an image you can either save it such as:
-# image.save(f"{prompt}.png")
-
-# # or if you're in a google colab you can directly display it with 
-# print(image)
-
+app.mainloop()

@@ -1,0 +1,13 @@
+prefix=/home/ubuntu/Downloads/AINEW/AI_Tools/venv
+exec_prefix=/home/ubuntu/Downloads/AINEW/AI_Tools/venv
+libdir=/home/ubuntu/Downloads/AINEW/AI_Tools/venv/lib
+sharedlibdir=/home/ubuntu/Downloads/AINEW/AI_Tools/venv/lib
+includedir=/home/ubuntu/Downloads/AINEW/AI_Tools/venv/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.2.13
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}
